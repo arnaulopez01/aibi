@@ -1,0 +1,132 @@
+/* Estilos adicionales para Generative BI */
+
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.float-animation {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Efectos de gradiente mejorados */
+.gradient-border {
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, #764ba2, #9f7aea) border-box;
+}
+
+/* Estilos para elementos interactivos */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.15);
+}
+
+/* Efecto de resplandor */
+.glow-effect {
+    position: relative;
+}
+
+.glow-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.glow-effect:hover::after {
+    opacity: 1;
+}
+
+/* Estilos para estadísticas */
+.stat-card {
+    background: linear-gradient(145deg, #ffffff, #f5f5f5);
+    border-radius: 16px;
+    box-shadow: 8px 8px 16px #e6e6e6, -8px -8px 16px #ffffff;
+}
+
+/* Mejoras de responsividad */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+        line-height: 1.2;
+    }
+    
+    .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .testimonial-card {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Scroll suave */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Estilos para enlaces */
+a {
+    transition: all 0.3s ease;
+}
+
+/* Mejoras para botones */
+.btn-primary {
+    background: linear-gradient(135deg, #764ba2 0%, #9f7aea 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s ease;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+/* Estilos para las secciones */
+section {
+    position: relative;
+    overflow: hidden;
+}

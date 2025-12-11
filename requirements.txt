@@ -1,0 +1,7 @@
+flask
+flask-login
+flask-bcrypt
+python-dotenv
+google-genai
+pandas
+openpyxl

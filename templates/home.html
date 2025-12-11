@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative BI | IA Avanzada para Análisis de Datos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #764ba2 0%, #9f7aea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <nav class="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-purple-100 shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                <div class="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center shadow-lg shadow-purple-500/30">
+                    <span class="text-white font-bold text-xl">G</span>
+                </div>
+                <div class="font-extrabold text-2xl gradient-text">GenBI</div>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-gray-600 hover:text-purple-600 font-medium transition text-sm uppercase tracking-wide">Características</a>
+                <a href="#how-it-works" class="text-gray-600 hover:text-purple-600 font-medium transition text-sm uppercase tracking-wide">Cómo Funciona</a>
+                <a href="#testimonials" class="text-gray-600 hover:text-purple-600 font-medium transition text-sm uppercase tracking-wide">Testimonios</a>
+                <a href="/auth" class="bg-gray-900 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md hover:bg-gray-800 transition transform hover:-translate-y-0.5">
+                    Iniciar Sesión
+                </a>
+            </div>
+
+            <div class="md:hidden">
+                <a href="/auth" class="text-sm font-bold text-purple-600 bg-purple-50 px-4 py-2 rounded-lg">Acceder</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative overflow-hidden pt-32 pb-12 lg:pt-40">
+        <div class="absolute inset-0 z-0 pointer-events-none">
+            <div class="absolute top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+            <div class="absolute top-40 right-10 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+            <div class="absolute bottom-20 left-1/2 w-72 h-72 bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+        </div>
+        
+        <main class="relative z-10 flex flex-col items-center justify-center text-center px-4">
+            <div class="inline-flex items-center px-4 py-1.5 mb-8 text-sm font-semibold tracking-wider text-purple-700 uppercase bg-white/50 backdrop-blur-sm rounded-full border border-purple-200 shadow-sm">
+                <span class="w-2 h-2 mr-2 bg-purple-600 rounded-full pulse-animation"></span>
+                Nuevo: Análisis con Gemini 2.5 Flash
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight max-w-5xl leading-tight">
+                Transforma tus datos en <br> <span class="gradient-text">decisiones inteligentes</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed mx-auto">
+                Sube tu Excel o CSV. Nuestra IA analiza patrones, detecta tendencias ocultas y genera dashboards profesionales en segundos.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 mb-16 w-full justify-center px-4">
+                <a href="/auth" class="inline-flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-purple-200 hover:shadow-2xl hover:shadow-purple-300 transition-all duration-300 hover:-translate-y-1">
+                    Probar Gratis Ahora
+                </a>
+                <a href="#how-it-works" class="inline-flex items-center justify-center bg-white text-gray-700 border border-gray-200 px-8 py-4 rounded-xl font-bold text-lg shadow-md hover:shadow-lg hover:border-purple-300 transition-all duration-300">
+                    Ver Demo
+                </a>
+            </div>
+            
+            <div class="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 mx-auto transform hover:scale-[1.01] transition duration-500 mb-10">
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 z-0"></div>
+                <div class="relative z-10 p-1">
+                    <div class="flex items-center justify-between px-4 py-3 bg-white/80 border-b border-gray-100 backdrop-blur">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                        </div>
+                        <div class="text-xs text-gray-400 font-medium uppercase tracking-widest">Dashboard Generado por IA</div>
+                    </div>
+                    <div class="p-6 md:p-8 bg-white/40 backdrop-blur-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div class="h-24 bg-white rounded-xl border border-purple-100 p-4 shadow-sm flex flex-col justify-center items-center">
+                                <div class="text-3xl font-bold text-purple-600">98%</div>
+                                <div class="text-xs text-gray-500">Precisión</div>
+                            </div>
+                            <div class="h-24 bg-white rounded-xl border border-indigo-100 p-4 shadow-sm flex flex-col justify-center items-center">
+                                <div class="text-3xl font-bold text-indigo-600">24s</div>
+                                <div class="text-xs text-gray-500">Tiempo</div>
+                            </div>
+                            <div class="h-24 bg-white rounded-xl border border-pink-100 p-4 shadow-sm flex flex-col justify-center items-center">
+                                <div class="text-3xl font-bold text-pink-500">12</div>
+                                <div class="text-xs text-gray-500">Gráficos</div>
+                            </div>
+                        </div>
+                        <div class="h-48 bg-white rounded-xl border border-gray-100 flex items-end justify-center px-10 pb-4 gap-4">
+                            <div class="w-full bg-purple-200 rounded-t h-[40%]"></div>
+                            <div class="w-full bg-purple-300 rounded-t h-[70%]"></div>
+                            <div class="w-full bg-purple-400 rounded-t h-[50%]"></div>
+                            <div class="w-full bg-purple-500 rounded-t h-[85%]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <section id="features" class="py-24 bg-white relative z-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-purple-600 font-bold tracking-wider uppercase text-sm">Características</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">Potencia tu análisis</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Todo lo que necesitas para transformar datos crudos en insights.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 rounded-2xl p-8 card-hover border border-gray-100">
+                    <div class="w-14 h-14 rounded-xl gradient-bg flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20">
+                        <span class="text-white text-2xl">🧠</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Análisis Inteligente</h3>
+                    <p class="text-gray-600">Nuestra IA identifica patrones y anomalías que pasarían desapercibidas manualmente.</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-2xl p-8 card-hover border border-gray-100">
+                    <div class="w-14 h-14 rounded-xl gradient-bg flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20">
+                        <span class="text-white text-2xl">📊</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Dashboards ECharts</h3>
+                    <p class="text-gray-600">Visualizaciones profesionales interactivas que puedes explorar y exportar.</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-2xl p-8 card-hover border border-gray-100">
+                    <div class="w-14 h-14 rounded-xl gradient-bg flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20">
+                        <span class="text-white text-2xl">⚡</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Velocidad Flash</h3>
+                    <p class="text-gray-600">Procesamiento impulsado por Gemini 2.5 Flash para resultados inmediatos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="py-24 bg-gradient-to-b from-purple-50 to-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Así de simple</h2>
+                <p class="text-xl text-gray-600">Tres pasos hacia datos inteligentes</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 max-w-5xl mx-auto">
+                <div class="text-center relative group">
+                    <div class="w-20 h-20 rounded-full bg-white border-4 border-purple-100 flex items-center justify-center text-2xl font-bold text-purple-600 mx-auto mb-6 shadow-sm">1</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Sube tu archivo</h3>
+                    <p class="text-gray-500">Excel (.xlsx) o CSV.</p>
+                </div>
+                
+                <div class="text-center relative group">
+                    <div class="hidden md:block absolute top-10 -left-1/2 w-full h-1 bg-purple-100 -z-10"></div>
+                    <div class="w-20 h-20 rounded-full bg-white border-4 border-purple-100 flex items-center justify-center text-2xl font-bold text-purple-600 mx-auto mb-6 shadow-sm">2</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">La IA Analiza</h3>
+                    <p class="text-gray-500">Detecta y visualiza.</p>
+                </div>
+                
+                <div class="text-center relative group">
+                    <div class="hidden md:block absolute top-10 -left-1/2 w-full h-1 bg-purple-100 -z-10"></div>
+                    <div class="w-20 h-20 rounded-full bg-white border-4 border-purple-100 flex items-center justify-center text-2xl font-bold text-purple-600 mx-auto mb-6 shadow-sm">3</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Explora</h3>
+                    <p class="text-gray-500">Interactúa con tus datos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="testimonials" class="py-24 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Lo que dicen nuestros clientes</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Empresas que ya transforman sus datos</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-sm card-hover border border-gray-100">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center text-white font-bold mr-4">JD</div>
+                        <div>
+                            <h4 class="font-bold text-gray-900">Juan Díaz</h4>
+                            <p class="text-purple-600 text-sm font-medium">Analytics Director</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 italic">"Redujo nuestro tiempo de análisis de 10 horas a 30 minutos. La precisión es impresionante."</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-sm card-hover border border-gray-100">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center text-white font-bold mr-4">MR</div>
+                        <div>
+                            <h4 class="font-bold text-gray-900">María R.</h4>
+                            <p class="text-purple-600 text-sm font-medium">CEO TechSolutions</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 italic">"Por fin podemos competir con los grandes sin necesidad de un equipo de data scientists."</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-sm card-hover border border-gray-100">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center text-white font-bold mr-4">CP</div>
+                        <div>
+                            <h4 class="font-bold text-gray-900">Carlos Pérez</h4>
+                            <p class="text-purple-600 text-sm font-medium">Ventas Manager</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 italic">"Los dashboards predictivos nos han permitido anticipar tendencias de mercado. Increíble."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 gradient-bg relative overflow-hidden">
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl"></div>
+
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">¿Listo para transformar tus datos?</h2>
+            <p class="text-xl text-white/90 mb-10 max-w-3xl mx-auto">Únete a miles de empresas que ya toman decisiones más inteligentes.</p>
+            
+            <div class="flex flex-col sm:flex-row gap-5 justify-center">
+                <a href="/auth" class="bg-white text-purple-700 px-10 py-4 rounded-xl font-bold text-lg shadow-2xl hover:scale-105 transition-all duration-300">
+                    Comienza Gratis
+                </a>
+                <a href="#" class="bg-transparent border-2 border-white text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition-all duration-300">
+                    Solicitar Demo
+                </a>
+            </div>
+            <p class="text-white/70 mt-8 text-sm">Sin tarjeta de crédito requerida • Cancelación en cualquier momento</p>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 text-gray-300 py-12 border-t border-gray-800">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-6 md:mb-0">
+                    <div class="w-8 h-8 rounded gradient-bg flex items-center justify-center">
+                        <span class="text-white font-bold">G</span>
+                    </div>
+                    <div class="font-bold text-xl text-white">GenBI</div>
+                </div>
+                
+                <div class="flex flex-wrap gap-6 text-sm text-gray-500">
+                    <span>© 2025 Generative BI</span>
+                    <a href="#" class="hover:text-purple-400 transition">Privacidad</a>
+                    <a href="#" class="hover:text-purple-400 transition">Términos</a>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-8 border-t border-gray-800 text-center text-xs text-gray-600">
+                Potenciado por Google Gemini, Apache ECharts y Flask.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
