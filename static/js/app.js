@@ -5,8 +5,14 @@ let currentFileSummary = null;
 let currentFilePath = null;
 let currentDashId = null; 
 let activeFilters = {};   
+let mapInstances = {}; 
+let pieColorMap = {}; // Memoria para persistencia de colores
 
-document.addEventListener('DOMContentLoaded', loadHistory);
+document.addEventListener('DOMContentLoaded', () => {
+    if(document.getElementById("historyList")) {
+        loadHistory();
+    }
+});
 
 // --- GESTIÓN DE SESIÓN ---
 async function logout() {
@@ -28,8 +34,11 @@ if(fileInput) {
             const res = await fetch("/upload_and_analyze", { method: "POST", body: formData });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
+            
             currentFileSummary = data.summary;
             currentFilePath = data.file_path;
+            if(data.original_name) fileInput.dataset.originalName = data.original_name;
+
             label.textContent = "✅ " + file.name;
             label.classList.add("text-green-600");
             document.getElementById("promptContainer").classList.remove("opacity-50", "pointer-events-none");
@@ -40,6 +49,8 @@ if(fileInput) {
 // --- GENERACIÓN ---
 async function generate() {
     const instruction = document.getElementById("prompt").value;
+    const originalName = document.getElementById("fileInput").dataset.originalName;
+
     document.getElementById("inputSection").classList.add("hidden");
     document.getElementById("loader").classList.remove("hidden");
     document.getElementById("loader").classList.add("flex");
@@ -51,7 +62,8 @@ async function generate() {
             body: JSON.stringify({
                 file_path: currentFilePath,
                 summary: currentFileSummary,
-                instruction: instruction
+                instruction: instruction,
+                original_name: originalName
             })
         });
         const config = await res.json();
@@ -110,10 +122,19 @@ async function deleteDashboard(id, event) {
 async function loadDashboard(id) {
     currentDashId = id;
     activeFilters = {}; 
-    document.getElementById("inputSection").classList.add("hidden");
+    mapInstances = {}; 
+    pieColorMap = {}; // Resetear memoria de colores
+    
+    const inputSec = document.getElementById("inputSection");
+    if(inputSec) inputSec.classList.add("hidden");
+
     document.getElementById("dashboardGrid").innerHTML = "";
-    document.getElementById("loader").classList.remove("hidden");
-    document.getElementById("loader").classList.add("flex");
+    
+    const loader = document.getElementById("loader");
+    if(loader) {
+        loader.classList.remove("hidden");
+        loader.classList.add("flex");
+    }
 
     try {
         const res = await fetch(`/api/dashboards/${id}`);
@@ -122,17 +143,30 @@ async function loadDashboard(id) {
         renderDashboard(config);
     } catch(e) { alert("Error: " + e.message); } 
     finally {
-        document.getElementById("loader").classList.add("hidden");
-        document.getElementById("loader").classList.remove("flex");
+        if(loader) {
+            loader.classList.add("hidden");
+            loader.classList.remove("flex");
+        }
     }
+}
+
+// --- FULLSCREEN ---
+function openFullscreen() {
+    if (!currentDashId) return;
+    const url = `/view/${currentDashId}`;
+    window.open(url, '_blank');
 }
 
 function resetView() {
     currentDashId = null;
     activeFilters = {};
+    mapInstances = {};
+    pieColorMap = {};
     document.getElementById("inputSection").classList.remove("hidden");
     document.getElementById("dashboardGrid").classList.add("hidden");
     document.getElementById("pageTitle").innerHTML = `<span class="bg-indigo-100 text-indigo-700 p-1 rounded">📊</span> Nuevo Análisis`;
+    const btnFull = document.getElementById("btnFullscreen");
+    if(btnFull) btnFull.classList.add("hidden");
 }
 
 // --- INTERACTIVIDAD ---
@@ -143,8 +177,7 @@ async function applyFilter(column, value) {
     else activeFilters[column] = value; 
 
     const grid = document.getElementById("dashboardGrid");
-    grid.style.opacity = "0.6";
-    grid.style.pointerEvents = "none";
+    grid.style.opacity = "0.7";
 
     try {
         const res = await fetch(`/api/dashboards/${currentDashId}/filter`, {
@@ -162,7 +195,6 @@ async function applyFilter(column, value) {
         alert("Error al filtrar");
     } finally {
         grid.style.opacity = "1";
-        grid.style.pointerEvents = "auto";
     }
 }
 
@@ -172,7 +204,8 @@ function renderFilterTags() {
         tagContainer = document.createElement("div");
         tagContainer.id = "filterTags";
         tagContainer.className = "flex gap-2 mb-4 flex-wrap px-6";
-        document.getElementById("mainScroll").insertBefore(tagContainer, document.getElementById("dashboardGrid"));
+        const grid = document.getElementById("dashboardGrid");
+        if(grid) grid.parentNode.insertBefore(tagContainer, grid);
     }
     
     tagContainer.innerHTML = "";
@@ -184,98 +217,163 @@ function renderFilterTags() {
     });
 }
 
-// --- RENDERIZADO ---
+// --- RENDERIZADO DEL DASHBOARD ---
 function renderDashboard(config) {
-    const grid = document.getElementById("dashboardGrid");
-    grid.innerHTML = "";
-    grid.classList.remove("hidden");
-    document.getElementById("pageTitle").innerHTML = `<span class="bg-indigo-100 text-indigo-700 p-1 rounded">📊</span> ${config.title || "Dashboard"}`;
+    const mainContainer = document.getElementById("dashboardGrid");
+    mainContainer.innerHTML = "";
+    mainContainer.classList.remove("hidden");
+    mainContainer.className = "pb-20"; 
 
+    document.getElementById("pageTitle").innerHTML = `<span class="bg-indigo-100 text-indigo-700 p-1 rounded">📊</span> ${config.title || "Dashboard"}`;
     const oldTags = document.getElementById("filterTags");
     if(oldTags) oldTags.innerHTML = "";
 
-    config.components.forEach((comp, idx) => {
-        if (!comp.data) return;
+    // 1. Separar componentes
+    const maps = config.components.filter(c => c.type === 'map');
+    const kpis = config.components.filter(c => c.type === 'kpi');
+    const charts = config.components.filter(c => c.type === 'chart');
 
-        const card = document.createElement("div");
-        card.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col hover:shadow-md transition duration-300 relative group";
+    // 2. RENDERIZAR PARTE SUPERIOR (Map + KPIs)
+    if (maps.length > 0) {
+        const topSection = document.createElement("div");
+        // Layout: Mapa (3/4) | KPIs (1/4)
+        topSection.className = "grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6 h-auto lg:h-[500px]"; 
         
-        const headerHtml = `
-            <div class="mb-4">
-                <h3 class="font-bold text-slate-800 text-lg leading-tight">${comp.title}</h3>
-                <p class="text-xs text-slate-500 truncate">${comp.description || ''}</p>
-            </div>
-        `;
+        // A. MAPA
+        const mapComp = maps[0];
+        const mapCard = document.createElement("div");
+        mapCard.className = "lg:col-span-3 bg-white p-1 rounded-2xl shadow-sm border border-slate-200 h-[400px] lg:h-full relative overflow-hidden";
+        
+        const mapId = "map_" + mapComp.id;
+        // Solo el contenedor, sin título
+        mapCard.innerHTML = `<div id="${mapId}" class="w-full h-full rounded-xl bg-slate-100 relative"></div>`;
+        topSection.appendChild(mapCard);
+        
+        // B. KPIS
+        const kpiCol = document.createElement("div");
+        kpiCol.className = "lg:col-span-1 flex flex-col gap-6 h-full";
+        
+        kpis.forEach(kpi => {
+            const kpiCard = createKpiCard(kpi);
+            kpiCard.classList.add("flex-grow");
+            kpiCol.appendChild(kpiCard);
+        });
+        topSection.appendChild(kpiCol);
+        
+        mainContainer.appendChild(topSection);
+        
+        setTimeout(() => initMap(mapId, mapComp), 100);
 
-        if (comp.type === 'kpi') {
-            card.classList.add("col-span-1", "h-40");
-            card.innerHTML = headerHtml + renderKPI(comp.data, comp.id);
-        } else {
-            card.classList.add("col-span-1", "h-[400px]");
-            if (comp.chart_type === 'map' || config.components.length === 1) card.classList.add("lg:col-span-2");
-            
-            if (comp.type === 'chart') {
-                const chartId = "chart_" + comp.id;
-                card.innerHTML = headerHtml + `<div id="${chartId}" class="flex-grow w-full h-full"></div>`;
-                if(activeFilters[comp.config.x]) card.classList.add("ring-2", "ring-indigo-500");
-                grid.appendChild(card);
-                setTimeout(() => initChart(chartId, comp, idx), 50);
-                return;
-            } else if (comp.type === 'map') {
-                const mapId = "map_" + comp.id;
-                // Importante: MapLibre necesita un contenedor relativo con dimensiones definidas
-                card.innerHTML = headerHtml + `<div id="${mapId}" class="flex-grow w-full h-full rounded-xl overflow-hidden bg-slate-100 relative"></div>`;
-                grid.appendChild(card);
-                setTimeout(() => initMap(mapId, comp), 100); // Un poco más de delay para asegurar render
-                return;
-            }
+    } else {
+        // Fallback: Si no hay mapa, KPIs horizontales
+        if (kpis.length > 0) {
+            const kpiRow = document.createElement("div");
+            kpiRow.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6";
+            kpis.forEach(kpi => {
+                kpiRow.appendChild(createKpiCard(kpi));
+            });
+            mainContainer.appendChild(kpiRow);
         }
-        grid.appendChild(card);
-    });
+    }
+
+    // 3. RENDERIZAR PARTE INFERIOR (Charts)
+    if (charts.length > 0) {
+        const chartGrid = document.createElement("div");
+        chartGrid.className = "grid grid-cols-1 lg:grid-cols-2 gap-6";
+        
+        charts.forEach((comp, idx) => {
+            const card = document.createElement("div");
+            card.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-[400px] flex flex-col relative";
+            const headerHtml = `<div class="mb-2"><h3 class="font-bold text-slate-800 text-lg leading-tight">${comp.title}</h3></div>`;
+            const chartId = "chart_" + comp.id;
+            card.innerHTML = headerHtml + `<div id="${chartId}" class="flex-grow w-full h-full"></div>`;
+            
+            if(activeFilters[comp.config.x]) card.classList.add("ring-2", "ring-indigo-500");
+            
+            chartGrid.appendChild(card);
+            setTimeout(() => initChart(chartId, comp, idx), 50);
+        });
+        mainContainer.appendChild(chartGrid);
+    }
+
+    const btnFull = document.getElementById("btnFullscreen");
+    if(btnFull) btnFull.classList.remove("hidden");
 }
 
+function createKpiCard(comp) {
+    const card = document.createElement("div");
+    card.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-center items-center text-center hover:shadow-md transition";
+    card.innerHTML = `
+        <h3 class="font-bold text-slate-500 text-sm uppercase tracking-wider mb-2">${comp.title}</h3>
+        <div id="kpi_val_${comp.id}" class="text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
+            ${formatNumber(comp.data.value)}
+        </div>
+        ${comp.description ? `<p class="text-xs text-slate-400 mt-2">${comp.description}</p>` : ''}
+    `;
+    return card;
+}
+
+// --- ACTUALIZACIÓN DE DATOS ---
 function updateComponentsData(components) {
     components.forEach(comp => {
         if (comp.type === 'chart') {
             const chartInstance = echarts.getInstanceByDom(document.getElementById("chart_" + comp.id));
             if (chartInstance) {
-                chartInstance.setOption({
-                    dataset: { source: comp.data.source }
-                });
+                chartInstance.setOption({ dataset: { source: comp.data.source } });
             }
         } else if (comp.type === 'kpi') {
             const kpiValEl = document.getElementById("kpi_val_" + comp.id);
             if (kpiValEl) kpiValEl.innerText = formatNumber(comp.data.value);
         } else if (comp.type === 'map') {
-            // Mapas son complejos de actualizar parcialmente sin recargar el dashboard
-            // o sin lógica compleja de capas. 
-            // Para simplificar y asegurar que funciona, recargamos el mapa entero.
-             const mapId = "map_" + comp.id;
-             const mapContainer = document.getElementById(mapId);
-             if (mapContainer) {
-                 mapContainer.innerHTML = ""; // Limpiar
-                 initMap(mapId, comp); // Repintar
+             // Actualización suave del mapa
+             const map = mapInstances[comp.id];
+             if (map && map.getSource('points')) {
+                 const newGeoJSON = createGeoJSON(comp.data, comp.config);
+                 map.getSource('points').setData(newGeoJSON);
+             } else {
+                 const mapId = "map_" + comp.id;
+                 const mapContainer = document.getElementById(mapId);
+                 if (mapContainer) {
+                     mapContainer.innerHTML = ""; 
+                     initMap(mapId, comp); 
+                 }
              }
         }
     });
 }
 
-function formatNumber(val) {
-    if (typeof val === 'number') {
-        return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2, notation: "compact" }).format(val);
-    }
-    return val;
+// --- HELPERS ---
+
+function createGeoJSON(data, config) {
+    const latCol = config.lat;
+    const lonCol = config.lon;
+    
+    const features = data.map(row => {
+        const lat = parseFloat(row[latCol]);
+        const lon = parseFloat(row[lonCol]);
+        if (isNaN(lat) || isNaN(lon)) return null;
+
+        let popupContent = `<div class="p-1">`;
+        Object.entries(row).forEach(([k, v]) => {
+            if(k !== latCol && k !== lonCol) popupContent += `<span class="text-xs text-slate-600"><b>${k}:</b> ${v}</span><br/>`;
+        });
+        popupContent += "</div>";
+
+        return {
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [lon, lat] },
+            properties: { description: popupContent }
+        };
+    }).filter(f => f !== null);
+
+    return { type: 'FeatureCollection', features: features };
 }
 
-// --- CAMBIO: TEXTO KPI NEGRO ---
-function renderKPI(data, id) {
-    return `
-        <div class="flex flex-grow items-center justify-center">
-            <span id="kpi_val_${id}" class="text-5xl font-extrabold text-slate-900 tracking-tight">
-                ${formatNumber(data.value)}
-            </span>
-        </div>
-    `;
+function formatNumber(val) {
+    if (typeof val === 'number') {
+        return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(val);
+    }
+    return val;
 }
 
 function initChart(domId, comp, idx) {
@@ -283,85 +381,93 @@ function initChart(domId, comp, idx) {
     if (!dom) return;
     const myChart = echarts.init(dom);
     const isPie = comp.chart_type === 'pie';
-    const isLine = comp.chart_type === 'line';
     
-    // Paleta de colores vibrantes
+    // Paleta vibrante y ordenada
     const colors = [
         '#6366f1', '#10b981', '#f59e0b', '#ec4899', 
-        '#3b82f6', '#8b5cf6', '#ef4444', '#06b6d4'
+        '#3b82f6', '#8b5cf6', '#ef4444', '#06b6d4',
+        '#84cc16', '#14b8a6', '#f97316', '#64748b'
     ];
-    // Color único por gráfico
     const themeColor = colors[idx % colors.length];
+
+    // LÓGICA DE MEMORIA DE COLORES
+    if (isPie) {
+        if (!pieColorMap[comp.id]) pieColorMap[comp.id] = {};
+        
+        let nextColorIdx = Object.keys(pieColorMap[comp.id]).length;
+        // Asumimos dim[0] es la categoría
+        const catField = comp.data.dimensions[0]; 
+        
+        comp.data.source.forEach(row => {
+            const name = row[catField];
+            if (!pieColorMap[comp.id][name]) {
+                // Asignar siguiente color de la paleta
+                pieColorMap[comp.id][name] = colors[nextColorIdx % colors.length];
+                nextColorIdx++;
+            }
+        });
+    }
 
     const option = {
         color: isPie ? colors : [themeColor],
-        tooltip: { trigger: isPie ? 'item' : 'axis', backgroundColor: 'rgba(255,255,255,0.95)', padding: 12 },
+        tooltip: { 
+            trigger: isPie ? 'item' : 'axis', 
+            backgroundColor: 'rgba(255,255,255,0.95)', 
+            padding: 12,
+            textStyle: { color: '#1e293b' },
+            valueFormatter: (value) => formatNumber(value)
+        },
         grid: { left: '3%', right: '4%', bottom: '10%', top: '15%', containLabel: true },
         dataset: { dimensions: comp.data.dimensions, source: comp.data.source },
-        xAxis: isPie ? { show: false } : { type: 'category', axisLabel: { rotate: 25, fontSize: 11, color: '#64748b' } },
-        yAxis: isPie ? { show: false } : { type: 'value', splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } } },
+        xAxis: isPie ? { show: false } : { 
+            type: 'category', 
+            axisLabel: { rotate: 25, fontSize: 11, color: '#64748b', interval: 0 } 
+        },
+        yAxis: isPie ? { show: false } : { 
+            type: 'value', 
+            splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } } 
+        },
         series: [{
             type: comp.chart_type || 'bar',
             radius: isPie ? ['40%', '70%'] : undefined,
             itemStyle: { 
                 borderRadius: isPie ? 5 : [4, 4, 0, 0],
-                color: isPie ? undefined : themeColor
+                borderColor: '#fff',
+                borderWidth: isPie ? 2 : 0,
+                // Si es Pie, consultamos la memoria, si no, color del tema
+                color: isPie ? (params) => {
+                    return pieColorMap[comp.id][params.name] || themeColor;
+                } : themeColor
             },
-            colorBy: (isLine) ? 'series' : 'series' // Forzamos series para mantener color uniforme en barras
+            label: { show: isPie, formatter: '{b}: {d}%' }
         }]
     };
     myChart.setOption(option);
     window.addEventListener("resize", () => myChart.resize());
 
     myChart.on('click', function(params) {
-        if (comp.config && comp.config.x) {
+        if (comp.config && comp.config.x && params.name !== 'Otros') {
             applyFilter(comp.config.x, params.name);
         }
     });
     myChart.getZr().setCursorStyle('pointer');
 }
 
-// --- CAMBIO: MAPLIBRE GL JS (OPENSTREETMAP) ---
+// --- INIT MAPA (Instantáneo) ---
 function initMap(domId, comp) {
     const dom = document.getElementById(domId);
     if (!dom) return;
 
-    // 1. Extraer nombres de columnas de lat/lon del config
-    const latCol = comp.config.lat;
-    const lonCol = comp.config.lon;
-
-    // 2. Convertir datos a GeoJSON
-    const features = comp.data.map(row => {
-        // Aseguramos que son números
-        const lat = parseFloat(row[latCol]);
-        const lon = parseFloat(row[lonCol]);
-        
-        if (isNaN(lat) || isNaN(lon)) return null;
-
-        // Crear tooltip html
-        let popupContent = `<strong>${comp.title}</strong><br/>`;
-        Object.entries(row).forEach(([k, v]) => {
-            if(k !== latCol && k !== lonCol) popupContent += `${k}: ${v}<br/>`;
-        });
-
-        return {
-            type: 'Feature',
-            geometry: {
-                type: 'Point',
-                coordinates: [lon, lat] // GeoJSON es [lon, lat]
-            },
-            properties: {
-                description: popupContent
-            }
-        };
-    }).filter(f => f !== null);
-
-    if (features.length === 0) {
+    const geoJSON = createGeoJSON(comp.data, comp.config);
+    if (geoJSON.features.length === 0) {
         dom.innerHTML = "<div class='flex items-center justify-center h-full text-slate-400'>Sin coordenadas válidas</div>";
         return;
     }
 
-    // 3. Inicializar Mapa
+    // Calcular bounds antes para zoom instantáneo
+    const bounds = new maplibregl.LngLatBounds();
+    geoJSON.features.forEach(feature => bounds.extend(feature.geometry.coordinates));
+
     const map = new maplibregl.Map({
         container: domId,
         style: {
@@ -382,55 +488,41 @@ function initMap(domId, comp) {
                 maxzoom: 19
             }]
         },
-        center: [0, 0],
-        zoom: 1
+        bounds: bounds, // <--- CLAVE PARA NO ANIMAR
+        fitBoundsOptions: { padding: 80, maxZoom: 14 }
     });
 
-    map.on('load', () => {
-        // Añadir fuente de datos
-        map.addSource('points', {
-            type: 'geojson',
-            data: {
-                type: 'FeatureCollection',
-                features: features
-            }
-        });
+    mapInstances[comp.id] = map;
 
-        // Añadir capa de puntos (Círculos rojos)
+    map.on('load', () => {
+        map.addSource('points', { type: 'geojson', data: geoJSON });
+
         map.addLayer({
             id: 'points-layer',
             type: 'circle',
             source: 'points',
             paint: {
                 'circle-radius': 6,
-                'circle-color': '#ef4444', // Rojo vibrante
+                'circle-color': '#4f46e5',
                 'circle-stroke-width': 2,
-                'circle-stroke-color': '#ffffff'
+                'circle-stroke-color': '#ffffff',
+                'circle-opacity': 0.8
             }
         });
 
-        // Configurar popups al clic
         map.on('click', 'points-layer', (e) => {
             const coordinates = e.features[0].geometry.coordinates.slice();
             const description = e.features[0].properties.description;
-
             while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
                 coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
             }
-
             new maplibregl.Popup()
                 .setLngLat(coordinates)
                 .setHTML(description)
                 .addTo(map);
         });
 
-        // Cambiar cursor
         map.on('mouseenter', 'points-layer', () => map.getCanvas().style.cursor = 'pointer');
         map.on('mouseleave', 'points-layer', () => map.getCanvas().style.cursor = '');
-
-        // Auto-zoom para ver todos los puntos (Bbox)
-        const bounds = new maplibregl.LngLatBounds();
-        features.forEach(feature => bounds.extend(feature.geometry.coordinates));
-        map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
     });
 }

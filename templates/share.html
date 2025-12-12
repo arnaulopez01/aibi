@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vista Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        /* Ocultar elementos que app.js intenta manipular pero aquí no existen */
+        #inputSection, #loader { display: none !important; }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="max-w-7xl mx-auto mb-6 flex justify-between items-center">
+        <h1 id="pageTitle" class="text-2xl font-bold text-slate-800">Cargando...</h1>
+        <a href="/dashboard" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">← Volver</a>
+    </div>
+
+    <div class="max-w-7xl mx-auto" id="mainScroll">
+        <div id="filterTags"></div>
+        <div id="dashboardGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-10"></div>
+    </div>
+
+    <div id="loader" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+        <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Script de inicialización específico para esta vista
+        document.addEventListener('DOMContentLoaded', () => {
+            // Establecemos el ID que viene del backend
+            const dashId = "{{ dash_id }}";
+            if(dashId) {
+                loadDashboard(dashId);
+            }
+        });
+    </script>
+</body>
+</html>
