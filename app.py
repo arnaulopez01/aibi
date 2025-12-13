@@ -171,13 +171,13 @@ def api_login():
         return jsonify({"message": "OK", "redirect": url_for('dashboard')})
     return jsonify({"error": "Credenciales incorrectas"}), 401
 
-@app.route("/api/register", methods=["POST"])
-def api_register():
-    data = request.json
-    if get_user_by_email(data.get('email')): return jsonify({"error": "Usuario ya existe"}), 400
-    user = save_new_user(data.get('email'), data.get('password'))
-    login_user(user)
-    return jsonify({"message": "OK", "redirect": url_for('dashboard')})
+# @app.route("/api/register", methods=["POST"])
+# def api_register():
+#    data = request.json
+#    if get_user_by_email(data.get('email')): return jsonify({"error": "Usuario ya existe"}), 400
+#    user = save_new_user(data.get('email'), data.get('password'))
+#    login_user(user)
+#    return jsonify({"message": "OK", "redirect": url_for('dashboard')})
 
 @app.route("/api/logout", methods=["POST"])
 @login_required
