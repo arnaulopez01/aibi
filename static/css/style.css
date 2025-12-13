@@ -3,6 +3,8 @@
     --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --bg-color: #f8fafc;
     --text-main: #1e293b;
+    --sidebar-width: 280px;
+    --sidebar-collapsed: 80px;
 }
 
 body {
@@ -12,9 +14,8 @@ body {
     overflow-x: hidden;
 }
 
-/* --- TUS NUEVOS ESTILOS & ANIMACIONES --- */
+/* --- TUS ESTILOS & ANIMACIONES --- */
 
-/* Animación de entrada suave */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
@@ -23,7 +24,6 @@ body {
     animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-/* Animación flotante para elementos de fondo */
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-20px); }
@@ -32,15 +32,13 @@ body {
     animation: float 6s ease-in-out infinite;
 }
 
-/* Bordes con gradiente (utilidad) */
 .gradient-border-focus:focus-within {
     border-color: transparent;
     background: linear-gradient(white, white) padding-box,
                 linear-gradient(135deg, #764ba2, #9f7aea) border-box;
-    box-shadow: 0 0 0 1px #9f7aea; /* Simula ring */
+    box-shadow: 0 0 0 1px #9f7aea;
 }
 
-/* Efecto de resplandor para el botón */
 .glow-effect {
     position: relative;
     z-index: 1;
@@ -60,7 +58,6 @@ body {
     opacity: 0.7;
 }
 
-/* Botón Principal Premium */
 .btn-primary {
     background: var(--primary-gradient);
     color: white;
@@ -73,7 +70,6 @@ body {
     box-shadow: 0 10px 20px -5px rgba(118, 75, 162, 0.4);
 }
 
-/* --- UTILIDADES GENERALES --- */
 .gradient-text {
     background: var(--primary-gradient);
     -webkit-background-clip: text;
@@ -82,9 +78,113 @@ body {
     font-weight: 800;
 }
 
-/* Fondo Grid Sutil (Opcional, se mezcla bien con las blobs) */
+.gradient-bg {
+    background: var(--primary-gradient);
+}
+
 .bg-grid {
     background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
     background-size: 40px 40px;
     opacity: 0.5;
+}
+
+/* --- ESTILOS ESPECÍFICOS DEL DASHBOARD --- */
+
+.layout-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed);
+}
+
+/* Ocultar textos marcados explícitamente */
+.sidebar.collapsed .sidebar-text {
+    opacity: 0;
+    display: none;
+}
+
+/* Centrar la flecha y ocultar logo */
+.sidebar.collapsed .sidebar-header {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    justify-content: center !important;
+}
+.sidebar.collapsed .logo-container {
+    display: none;
+}
+
+.main-content {
+    flex-grow: 1;
+    overflow-x: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid rgba(165, 180, 252, 0.2);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.chart-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px -5px rgba(102, 126, 234, 0.15);
+}
+
+.file-drop-zone {
+    background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+    border: 2px dashed #c7d2fe;
+    transition: all 0.3s ease;
+}
+.file-drop-zone:hover, .file-drop-zone.dragover {
+    border-color: #818cf8;
+    background: linear-gradient(145deg, #eef2ff, #e0e7ff);
+}
+
+.loader {
+    width: 48px; height: 48px;
+    border: 3px solid #eef2ff; border-radius: 50%;
+    border-top-color: #6366f1;
+    animation: spin 1s ease-in-out infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* --- FIX LISTA HISTORIAL (Fechas en sidebar colapsado) --- */
+
+/* Cuando la sidebar está colapsada, fuerza márgenes y corte de texto */
+.sidebar.collapsed #historyList {
+    padding-left: 10px;
+    padding-right: 10px;
+    text-align: center;
+}
+
+/* Asegura que cualquier elemento dentro del historial respete el ancho */
+.sidebar.collapsed #historyList > * {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;       /* No pasarse del ancho */
+    overflow: hidden;      /* Cortar lo que sobra */
+    text-overflow: ellipsis; /* Poner ... si es muy largo */
+    padding-left: 4px;     /* Margen de seguridad interno */
+    padding-right: 4px;    /* Margen de seguridad interno */
+    font-size: 0.75rem;    /* Texto un pelín más pequeño para que quepa mejor */
 }

@@ -1,0 +1,1 @@
+{"id": "f48a151b-4028-4980-9d45-695838f789ee", "created_at": "2025-12-12T18:03:16.396975", "config": {"title": "Dashboard de Den\u00fancias por Internet", "components": [{"id": "kpi1", "type": "kpi", "title": "Total de Den\u00fancias (Unidades)", "description": "N\u00famero total de den\u00fancias registradas", "config": {"operation": "sum", "column": "Total"}, "data": {"value": 
